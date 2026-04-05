@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>RAAJERN - SVEJSNINGER</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #eee;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: #222;
+            padding: 16px 32px;
+            border-bottom: 2px solid #f4c542;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+        }
+        main {
+            max-width: 1100px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+
+        /* DESKTOP LAYOUT */
+        .layout {
+            display: flex;
+            gap: 40px;
+        }
+
+        /* MOBILE LAYOUT */
+        @media (max-width: 800px) {
+            .layout {
+                flex-direction: column;
+            }
+            .divider {
+                display: none;
+            }
+            input {
+                width: 100%;
+            }
+        }
+
+        .col {
+            flex: 1;
+        }
+        .divider {
+            width: 2px;
+            background: #444;
+        }
+        h2 {
+            color: #f4c542;
+            margin-bottom: 8px;
+        }
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: 600;
+        }
+        input {
+            width: 240px;
+            padding: 10px;
+            margin-top: 4px;
+            border: 1px solid #444;
+            background: #1b1b1b;
+            color: #f4c542;
+            font-size: 16px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: #f4c542;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 16px;
+            width: 240px;
+        }
+        button:hover {
+            background: #ffdd6e;
+        }
+        .result-block {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 2px solid #f4c542;
+        }
+        .result-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #f4c542;
+        }
+        .info-text {
+            margin-top: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+        .formula-box, .ascii-box {
+            background:#1b1b1b;
+            padding:12px;
+            border:1px solid #444;
+            width:fit-content;
+            margin-top:10px;
+            font-family: "Courier New", monospace;
+        }
+        .ascii-box {
+            white-space: pre;
+        }
+    </style>
+</head>
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    if (!netlifyIdentity.currentUser()) {
+        netlifyIdentity.open();
+    }
+});
+
+netlifyIdentity.on("login", () => {
+    netlifyIdentity.close();
+    location.reload();
+});
+
+function logout() {
+    netlifyIdentity.logout();
+    location.reload();
+}
+</script>
+<body>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    if (!netlifyIdentity.currentUser()) {
+        netlifyIdentity.open();
+    }
+});
+</script>
+<header>RAAJERN - SVEJSNINGER</header>
+<div id="authBar" style="text-align:center; margin-top:10px; font-size:14px;">
+    <span id="userEmail" style="color:#f4c542;"></span>
+    <button onclick="logout()" 
+            style="margin-left:10px; padding:6px 12px; background:#333; color:#eee; border:1px solid #555; cursor:pointer;">
+        Log ud
+    </button>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const user = netlifyIdentity.currentUser();
+    if (user) {
+        document.getElementById("userEmail").textContent = "Logget ind som: " + user.email;
+    }
+});
+</script>
+<main>
+
+    <div class="layout">
+
+        <!-- VENSTRE KOLONNE -->
+        <div class="col">
+
+            <h2>Input</h2>
+
+            <label>a‑mål a [mm]</label>
+            <input type="number" id="a" value="5" step="0.1">
+
+            <label>Flydespænding f<sub>y</sub> [MPa]</label>
+            <input type="number" id="fy" value="235">
+
+            <label>Påført kraft F [kN]</label>
+            <input type="number" id="F" value="100" step="0.1">
+
+            <button onclick="beregn()">BEREGN</button>
+
+            <div class="result-block">
+                <div>Nødvendig sømlængde L:</div>
+                <div class="result-value" id="L">-</div>
+            </div>
+
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- HØJRE KOLONNE -->
+        <div class="col">
+            <h2>Bemærkninger</h2>
+
+            <div class="info-text" id="bemText">
+                Indtast værdier for at se bemærkninger.
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<script>
+function findFu(fy) {
+    if (fy <= 240) return { fu: 360, betaw: 0.80 };  // S235
+    if (fy <= 285) return { fu: 410, betaw: 0.85 };  // S275
+    if (fy <= 365) return { fu: 470, betaw: 0.90 };  // S355
+    return { fu: fy * 1.5, betaw: 0.80 };            // fallback
+}
+
+function beregn() {
+    const a     = Number(document.getElementById("a").value);
+    const fy    = Number(document.getElementById("fy").value);
+    const FkN   = Number(document.getElementById("F").value);
+
+    const { fu, betaw } = findFu(fy);
+    const F = FkN * 1000;
+
+    const L = (fu * 0.7 * a) > 0
+        ? (F * betaw * Math.sqrt(3)) / (fu * 0.7 * a)
+        : NaN;
+
+    const r = v => isNaN(v) ? "-" : v.toFixed(1);
+
+    document.getElementById("L").textContent = r(L) + " mm";
+
+    const halv = isNaN(L) ? "-" : (L / 2).toFixed(1) + " mm";
+    const Aw = isNaN(L) ? "-" : (0.7 * a * L).toFixed(1) + " mm²";
+
+    document.getElementById("bemText").innerHTML =
+        `<b>Fordeling:</b><br>
+         <b>${halv} på hver side af emnet</b><br><br>
+
+         <b>Korrelationsfaktor β<sub>w</sub>:</b><br>
+         Automatisk valgt til ${betaw} baseret på f<sub>y</sub> = ${fy} MPa.<br><br>
+
+         <b>Effektivt svejseareal A<sub>w</sub>:</b><br>
+         A<sub>w</sub> = 0,7 · a · L = ${Aw}<br><br>
+
+         <b>Brudspænding f<sub>u</sub>:</b><br>
+         ${fu} MPa anvendes i beregninger.<br><br>
+
+         <b>Beregning (middelspændingsmetoden):</b><br>
+         Metoden fremgår af EN 1993‑1‑8 (Eurocode 3).<br>For alle andre kraftretninger end ren forskydning er den anvendte metode på den sikre side.<br>
+
+         <div class="formula-box">
+         F = ( f<u>u</u> / ( β<u>w</u> · √3 ) ) · ( 0,7 · a · L )
+         </div>
+
+         <br>Løsning for L:<br>
+
+         <div class="formula-box">
+         L = F · β<u>w</u> · √3 / ( f<u>u</u> · 0,7 · a )
+         </div>
+
+        `;
+}
+</script>
+
+</body>
+</html>
