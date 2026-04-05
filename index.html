@@ -26,13 +26,11 @@
             padding: 0 16px;
         }
 
-        /* DESKTOP LAYOUT */
         .layout {
             display: flex;
             gap: 40px;
         }
 
-        /* MOBILE LAYOUT */
         @media (max-width: 800px) {
             .layout {
                 flex-direction: column;
@@ -99,16 +97,13 @@
             line-height: 1.6;
             color: #ccc;
         }
-        .formula-box, .ascii-box {
+        .formula-box {
             background:#1b1b1b;
             padding:12px;
             border:1px solid #444;
             width:fit-content;
             margin-top:10px;
             font-family: "Courier New", monospace;
-        }
-        .ascii-box {
-            white-space: pre;
         }
     </style>
 </head>
@@ -117,7 +112,6 @@
 
 <header>RAAJERN - SVEJSNINGER</header>
 
-<!-- LOGIN TOPBAR -->
 <div id="authBar" style="text-align:center; margin-top:10px; font-size:14px;">
     <span id="userEmail" style="color:#f4c542;"></span>
     <button onclick="logout()"
@@ -130,7 +124,6 @@
 
     <div class="layout">
 
-        <!-- VENSTRE KOLONNE -->
         <div class="col">
 
             <h2>Input</h2>
@@ -155,7 +148,6 @@
 
         <div class="divider"></div>
 
-        <!-- HØJRE KOLONNE -->
         <div class="col">
             <h2>Bemærkninger</h2>
 
@@ -168,13 +160,12 @@
 
 </main>
 
-<!-- SVEJSEBEREGNER SCRIPT -->
 <script>
 function findFu(fy) {
-    if (fy <= 240) return { fu: 360, betaw: 0.80 };  // S235
-    if (fy <= 285) return { fu: 410, betaw: 0.85 };  // S275
-    if (fy <= 365) return { fu: 470, betaw: 0.90 };  // S355
-    return { fu: fy * 1.5, betaw: 0.80 };            // fallback
+    if (fy <= 240) return { fu: 360, betaw: 0.80 };
+    if (fy <= 285) return { fu: 410, betaw: 0.85 };
+    if (fy <= 365) return { fu: 470, betaw: 0.90 };
+    return { fu: fy * 1.5, betaw: 0.80 };
 }
 
 function beregn() {
@@ -185,8 +176,10 @@ function beregn() {
     const { fu, betaw } = findFu(fy);
     const F = FkN * 1000;
 
+    const gammaM2 = 1.25;
+
     const L = (fu * 0.7 * a) > 0
-        ? (F * betaw * Math.sqrt(3)) / (fu * 0.7 * a)
+        ? (F * betaw * Math.sqrt(3) * gammaM2) / (fu * 0.7 * a)
         : NaN;
 
     const r = v => isNaN(v) ? "-" : v.toFixed(1);
@@ -203,6 +196,9 @@ function beregn() {
          <b>Korrelationsfaktor β<sub>w</sub>:</b><br>
          Automatisk valgt til ${betaw} baseret på f<sub>y</sub> = ${fy} MPa.<br><br>
 
+         <b>Sikkerhedsfaktor γ<sub>M2</sub>:</b><br>
+         γ<sub>M2</sub> = 1,25 anvendt i beregningen.<br><br>
+
          <b>Effektivt svejseareal A<sub>w</sub>:</b><br>
          A<sub>w</sub> = 0,7 · a · L = ${Aw}<br><br>
 
@@ -214,16 +210,14 @@ function beregn() {
          For alle andre kraftretninger end ren forskydning er metoden på den sikre side.<br>
 
          <div class="formula-box">
-         F = ( f<u>u</u> / ( β<u>w</u> · √3 ) ) · ( 0,7 · a · L )
+         L = F · β<w> · √3 · γ<sub>M2</sub> / ( f<u>u</u> · 0,7 · a )
          </div>`;
 }
 </script>
 
-<!-- LOGIN SYSTEM (PLACERET KORREKT) -->
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 
 <script>
-// Åbn login hvis ingen bruger er logget ind
 document.addEventListener("DOMContentLoaded", () => {
     const user = netlifyIdentity.currentUser();
     if (!user) {
@@ -234,19 +228,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// Når bruger logger ind
 netlifyIdentity.on("login", user => {
     document.getElementById("userEmail").textContent =
         "Logget ind som: " + user.email;
     netlifyIdentity.close();
 });
 
-// Når bruger logger ud
 netlifyIdentity.on("logout", () => {
     location.reload();
 });
 
-// Logout-knap
 function logout() {
     netlifyIdentity.logout();
 }
