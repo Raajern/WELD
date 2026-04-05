@@ -241,10 +241,14 @@ netlifyIdentity.on("login", user => {
     netlifyIdentity.close();
 });
 
+// Når bruger logger ud
+netlifyIdentity.on("logout", () => {
+    location.reload();
+});
+
 // Logout-knap
 function logout() {
     netlifyIdentity.logout();
-    location.reload();
 }
 </script>
 
