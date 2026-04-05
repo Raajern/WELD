@@ -176,7 +176,7 @@ function beregn() {
     const { fu, betaw } = findFu(fy);
     const F = FkN * 1000;
 
-    const gammaM2 = 1.25;
+    const gammaM2 = 1.35;
 
     const L = (fu * 0.7 * a) > 0
         ? (F * betaw * Math.sqrt(3) * gammaM2) / (fu * 0.7 * a)
@@ -190,14 +190,13 @@ function beregn() {
     const Aw = isNaN(L) ? "-" : (0.7 * a * L).toFixed(1) + " mm²";
 
     document.getElementById("bemText").innerHTML =
-        `<b>Fordeling:</b><br>
-         <b>${halv} på hver side af emnet</b><br><br>
+        `<b>Fordeling:${halv} på hver side af emnet</b><br>
 
          <b>Korrelationsfaktor β<sub>w</sub>:</b><br>
          Automatisk valgt til ${betaw} baseret på f<sub>y</sub> = ${fy} MPa.<br><br>
 
          <b>Sikkerhedsfaktor γ<sub>M2</sub>:</b><br>
-         γ<sub>M2</sub> = 1,25 anvendt i beregningen.<br><br>
+         γ<sub>M2</sub> = 1,35 anvendt i beregningen.<br><br>
 
          <b>Effektivt svejseareal A<sub>w</sub>:</b><br>
          A<sub>w</sub> = 0,7 · a · L = ${Aw}<br><br>
